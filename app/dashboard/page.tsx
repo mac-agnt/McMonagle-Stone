@@ -1,22 +1,21 @@
-import { WelcomeBanner } from "@/components/home/WelcomeBanner";
-import { StatGrid } from "@/components/home/StatGrid";
-import { Recommendations } from "@/components/home/Recommendations";
-import { ActivityFeed } from "@/components/home/ActivityFeed";
-import { RecentProjects } from "@/components/home/RecentProjects";
+"use client";
+
+import { PageHeader } from "@/components/ui/PageHeader";
+import { HeroRow } from "@/components/dashboard/HeroRow";
+import { VolumeCharts } from "@/components/dashboard/VolumeCharts";
+import { WeekAndDepot } from "@/components/dashboard/WeekAndDepot";
 
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6 pb-24">
-      <WelcomeBanner />
-      <StatGrid />
-      <Recommendations />
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentProjects />
-        </div>
-        <ActivityFeed />
-      </div>
+      <PageHeader
+        title="Command Dashboard"
+        subtitle="The morning read on the yard. Tonnage first, because euros swing and stone does not."
+        live
+      />
+      <HeroRow />
+      <VolumeCharts />
+      <WeekAndDepot />
     </div>
   );
 }

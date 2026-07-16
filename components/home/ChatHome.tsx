@@ -85,11 +85,6 @@ export function ChatHome() {
   return (
     <div className="grid min-h-[520px] grid-cols-1 gap-6 lg:h-[calc(100dvh-9.5rem)] lg:grid-cols-[1fr_340px]">
     <div className="relative flex min-h-0 flex-col overflow-hidden lg:h-full">
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-[42%] top-1/2 h-80 w-[48rem] -translate-x-1/2 -translate-y-1/2 -rotate-12 rounded-full bg-glow/60 blur-[100px]" />
-        <div className="absolute left-[42%] top-1/2 h-32 w-80 -translate-x-1/2 -translate-y-1/2 -rotate-12 rounded-full bg-glow/90 blur-[30px]" />
-      </div>
-
       <AnimatePresence mode="wait" initial={false}>
         {started ? (
           <motion.div
@@ -244,7 +239,7 @@ export function ChatHome() {
                   value={draft}
                   onChange={setDraft}
                   onSubmit={() => send(draft)}
-                  placeholder="Ask Northbeam anything..."
+                  placeholder="Ask McMonagle Stone anything..."
                   size="lg"
                 />
               </motion.div>

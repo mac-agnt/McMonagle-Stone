@@ -26,6 +26,13 @@
   --color-cream: var(--cream);
   --color-cream-ink: var(--cream-ink);
   --color-glow: var(--glow);
+
+  /* shadcn-compatible aliases (map to the existing palette, no new colours).
+     Needed by vendored /components/ui pieces such as the mapcn map. */
+  --color-background: var(--surface);
+  --color-foreground: var(--ink);
+  --color-muted: var(--surface-raised);
+  --color-muted-foreground: var(--ink-faint);
 }
 
 :root {

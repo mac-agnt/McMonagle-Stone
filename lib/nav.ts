@@ -1,16 +1,13 @@
 import type { Icon } from "@phosphor-icons/react";
 import {
   Sparkle,
-  House,
   SquaresFour,
-  Kanban,
-  CalendarBlank,
-  ChartLineUp,
+  Package,
+  FunnelSimple,
+  Warning,
+  Boat,
   FileText,
   Users,
-  AddressBook,
-  ChatCircleDots,
-  Lightning,
   Gear,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -23,16 +20,13 @@ export type NavItem = {
 
 export const primaryNav: NavItem[] = [
   { label: "Home", href: "/", icon: Sparkle, slug: "home" },
-  { label: "Dashboard", href: "/dashboard", icon: House, slug: "dashboard" },
-  { label: "Feed", href: "/test/feed", icon: SquaresFour, slug: "feed" },
-  { label: "Projects", href: "/test/projects", icon: Kanban, slug: "projects" },
-  { label: "Schedule", href: "/test/schedule", icon: CalendarBlank, slug: "schedule" },
-  { label: "Analytics", href: "/test/analytics", icon: ChartLineUp, slug: "analytics" },
-  { label: "Reports", href: "/test/reports", icon: FileText, slug: "reports" },
-  { label: "Team", href: "/test/team", icon: Users, slug: "team" },
-  { label: "Directory", href: "/test/directory", icon: AddressBook, slug: "directory" },
-  { label: "Messages", href: "/test/messages", icon: ChatCircleDots, slug: "messages" },
-  { label: "Automations", href: "/test/automations", icon: Lightning, slug: "automations" },
+  { label: "Dashboard", href: "/dashboard", icon: SquaresFour, slug: "dashboard" },
+  { label: "Orders", href: "/orders", icon: Package, slug: "orders" },
+  { label: "Pipeline", href: "/pipeline", icon: FunnelSimple, slug: "pipeline" },
+  { label: "Delays", href: "/delays", icon: Warning, slug: "delays" },
+  { label: "Arrivals", href: "/arrivals", icon: Boat, slug: "arrivals" },
+  { label: "Reports", href: "/reports", icon: FileText, slug: "reports" },
+  { label: "Team", href: "/team", icon: Users, slug: "team" },
 ];
 
 export const secondaryNav: NavItem[] = [

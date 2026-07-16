@@ -42,10 +42,10 @@ export function Sidebar({
               className="overflow-hidden whitespace-nowrap"
             >
               <p className="text-[15px] font-semibold leading-tight text-ink">
-                Northbeam
+                McMonagle Stone
               </p>
               <p className="text-[11px] leading-tight text-ink-faint">
-                Workspace
+                Operations
               </p>
             </motion.div>
           )}

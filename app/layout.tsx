@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Northbeam",
-  description: "Workspace dashboard template",
+  title: "McMonagle Stone — Operations",
+  description: "Operations dashboard for McMonagle Stone",
 };
 
 const themeInitScript = `
