@@ -6,6 +6,7 @@ import { Topbar } from "./Topbar";
 import { MobileNav } from "./MobileNav";
 import { CommandPalette } from "./CommandPalette";
 import { Dock } from "./dock/Dock";
+import { LiveToast } from "./LiveToast";
 import { PageTransition } from "./PageTransition";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -42,6 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
+      <LiveToast />
       <Dock />
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Package, Coins, ClockCountdown, Warning } from "@phosphor-icons/react";
 import { Card } from "@/components/ui/Card";
@@ -7,6 +8,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { Sparkline } from "@/components/ui/Sparkline";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LiveDot } from "@/components/ui/LiveDot";
+import { CountUp } from "@/components/ui/CountUp";
 import { fadeUp, staggerContainer, ease } from "@/lib/motion";
 import {
   dispatchToday,
@@ -45,7 +47,7 @@ export function HeroRow() {
           <div>
             <p className="text-[12.5px] text-ink-faint">Tonnes dispatched today</p>
             <p className="mt-1 text-5xl font-semibold tracking-tight tabular-nums text-accent sm:text-6xl">
-              {dispatchToday.tonnes.toLocaleString("en-IE")}
+              <CountUp value={dispatchToday.tonnes} />
             </p>
             <p className="mt-1.5 text-[13px] text-ink-muted">
               of {formatTonnes(dispatchToday.target)} target
@@ -79,30 +81,41 @@ export function HeroRow() {
           <StatCard
             icon={Coins}
             label="Open order value"
-            value={formatEuroShort(dashboardKpis.openOrderValue)}
+            value={
+              <CountUp
+                value={dashboardKpis.openOrderValue}
+                format={formatEuroShort}
+              />
+            }
             hint="Across orders not yet delivered"
             valueTone="accent"
           />
         </motion.div>
 
         <motion.div variants={fadeUp} transition={{ duration: 0.35, ease }}>
-          <StatCard
-            icon={ClockCountdown}
-            label="Quotes awaiting follow-up"
-            value={followUps}
-            hint="Open 3 days or more, not yet chased"
-            valueTone={followUps > 0 ? "danger" : "ink"}
-          />
+          <Link href="/pipeline" className="block h-full">
+            <StatCard
+              icon={ClockCountdown}
+              label="Quotes awaiting follow-up"
+              value={<CountUp value={followUps} />}
+              hint="Open 3 days or more, not yet chased"
+              valueTone={followUps > 0 ? "danger" : "ink"}
+              className="h-full cursor-pointer transition-[border-color] hover:border-ink-faint/40"
+            />
+          </Link>
         </motion.div>
 
         <motion.div variants={fadeUp} transition={{ duration: 0.35, ease }}>
-          <StatCard
-            icon={Warning}
-            label="Orders at risk"
-            value={atRisk}
-            hint="At-risk or already late"
-            valueTone={atRisk > 0 ? "danger" : "ink"}
-          />
+          <Link href="/delays" className="block h-full">
+            <StatCard
+              icon={Warning}
+              label="Orders at risk"
+              value={<CountUp value={atRisk} />}
+              hint="At-risk or already late"
+              valueTone={atRisk > 0 ? "danger" : "ink"}
+              className="h-full cursor-pointer transition-[border-color] hover:border-ink-faint/40"
+            />
+          </Link>
         </motion.div>
       </div>
     </motion.section>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { MagnifyingGlass, ArrowElbowDownLeft } from "@phosphor-icons/react";
-import { allNav } from "@/lib/nav";
+import { search } from "@/lib/search";
 import { ease } from "@/lib/motion";
 
 export function CommandPalette({
@@ -19,11 +19,7 @@ export function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return allNav;
-    return allNav.filter((item) => item.label.toLowerCase().includes(q));
-  }, [query]);
+  const results = useMemo(() => search(query), [query]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset highlight when the query or open state (parent-controlled) changes
@@ -84,7 +80,7 @@ export function CommandPalette({
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search pages, actions..."
+                placeholder="Search orders, quotes, customers..."
                 className="h-12 w-full bg-transparent text-[14px] text-ink placeholder:text-ink-faint focus:outline-none"
               />
               <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[10px] text-ink-faint">
@@ -101,27 +97,51 @@ export function CommandPalette({
               {results.map((item, index) => {
                 const Icon = item.icon;
                 const active = index === activeIndex;
+                const newGroup =
+                  index === 0 || results[index - 1].group !== item.group;
                 return (
-                  <button
-                    key={item.href}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    onClick={() => {
-                      router.push(item.href);
-                      onClose();
-                    }}
-                    className={`relative flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-left text-[13.5px] transition-colors ${
-                      active ? "bg-accent-soft text-accent-strong" : "text-ink-muted"
-                    }`}
-                  >
-                    <Icon size={17} weight={active ? "fill" : "regular"} />
-                    <span className="font-medium">{item.label}</span>
-                    {active && (
-                      <ArrowElbowDownLeft
-                        size={13}
-                        className="ml-auto text-accent-strong/70"
-                      />
+                  <div key={item.id}>
+                    {newGroup && (
+                      <p className="px-3 pb-1 pt-2 text-[10.5px] font-medium uppercase tracking-wide text-ink-faint">
+                        {item.group}
+                      </p>
                     )}
-                  </button>
+                    <button
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onClick={() => {
+                        router.push(item.href);
+                        onClose();
+                      }}
+                      className={`relative flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-left text-[13.5px] transition-colors ${
+                        active ? "bg-accent-soft text-accent-strong" : "text-ink-muted"
+                      }`}
+                    >
+                      <Icon
+                        size={17}
+                        weight={active ? "fill" : "regular"}
+                        className="shrink-0"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">
+                          {item.label}
+                        </span>
+                        <span className="block truncate text-[11.5px] text-ink-faint">
+                          {item.detail}
+                        </span>
+                      </span>
+                      {item.meta && (
+                        <span className="shrink-0 text-[11.5px] tabular-nums text-ink-faint">
+                          {item.meta}
+                        </span>
+                      )}
+                      {active && (
+                        <ArrowElbowDownLeft
+                          size={13}
+                          className="shrink-0 text-accent-strong/70"
+                        />
+                      )}
+                    </button>
+                  </div>
                 );
               })}
             </div>

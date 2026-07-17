@@ -7,34 +7,31 @@ import {
   Paperclip,
   Microphone,
   Sparkle,
-  Kanban,
   Plus,
-  WarningCircle,
-  NotePencil,
-  CalendarBlank,
+  Warning,
+  Truck,
+  MapPin,
+  TrendDown,
 } from "@phosphor-icons/react";
 import { ease, fadeUp, staggerContainer } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { HomeRail } from "@/components/home/HomeRail";
+import { AssistantAnswer } from "@/components/home/AssistantAnswer";
+import {
+  answerFor,
+  suggestedQuestions,
+  type AssistantAnswer as Answer,
+} from "@/lib/assistant";
 
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  text: string;
-};
+type Message =
+  | { id: string; role: "user"; text: string }
+  | { id: string; role: "assistant"; answer: Answer };
 
 const suggestions = [
-  { icon: WarningCircle, label: "What's blocked this week?" },
-  { icon: Kanban, label: "Summarise my open projects" },
-  { icon: NotePencil, label: "Draft today's standup notes" },
-  { icon: CalendarBlank, label: "Who's free for a sync tomorrow?" },
-];
-
-const canned = [
-  "Here's a quick summary based on what's in your workspace right now.",
-  "Good question. Looking at recent activity, that's held steady this week.",
-  "Done. I've drafted that and left it in your notes for review.",
-  "Three projects touch that area. Checkout redesign is the one closest to done.",
+  { icon: Warning, label: suggestedQuestions[0] },
+  { icon: Truck, label: suggestedQuestions[1] },
+  { icon: MapPin, label: suggestedQuestions[2] },
+  { icon: TrendDown, label: suggestedQuestions[3] },
 ];
 
 export function ChatHome() {
@@ -62,17 +59,14 @@ export function ChatHome() {
     ]);
     setDraft("");
     setTyping(true);
+    const answer = answerFor(value);
     window.setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [
         ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: canned[Math.floor(Math.random() * canned.length)],
-        },
+        { id: crypto.randomUUID(), role: "assistant", answer },
       ]);
-    }, 1000 + Math.random() * 500);
+    }, 550);
   }
 
   function reset() {
@@ -106,7 +100,7 @@ export function ChatHome() {
                   </p>
                   <p className="flex items-center gap-1.5 text-[11px] leading-tight text-ink-faint">
                     <span className="size-1.5 rounded-full bg-success animate-pulse-dot" />
-                    Online
+                    Reading Orders, Pipeline, Delays
                   </p>
                 </div>
               </div>
@@ -131,16 +125,13 @@ export function ChatHome() {
                   transition={{ duration: 0.22, ease }}
                   className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}
                 >
-                  <div
-                    className={cn(
-                      "max-w-[70%] rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed",
-                      m.role === "user"
-                        ? "rounded-br-sm bg-accent text-accent-ink"
-                        : "rounded-bl-sm bg-surface text-ink"
-                    )}
-                  >
-                    {m.text}
-                  </div>
+                  {m.role === "user" ? (
+                    <div className="max-w-[70%] rounded-2xl rounded-br-sm bg-accent px-4 py-2.5 text-[13.5px] leading-relaxed text-accent-ink">
+                      {m.text}
+                    </div>
+                  ) : (
+                    <AssistantAnswer answer={m.answer} />
+                  )}
                 </motion.div>
               ))}
 
@@ -175,7 +166,7 @@ export function ChatHome() {
                 value={draft}
                 onChange={setDraft}
                 onSubmit={() => send(draft)}
-                placeholder="Message assistant..."
+                placeholder="Ask about an order, a quote, the yard..."
                 autoFocus
               />
             </div>
@@ -208,7 +199,7 @@ export function ChatHome() {
                 className="inline-flex flex-col items-center"
               >
                 <h1 className="text-[26px] font-medium tracking-tight text-ink sm:text-[30px]">
-                  Good afternoon, Mac
+                  Good morning, Daniel
                 </h1>
                 <motion.div
                   className="mt-2 h-px w-16 bg-gradient-to-r from-transparent via-border to-transparent"
@@ -225,7 +216,8 @@ export function ChatHome() {
                 transition={{ duration: 0.35, delay: 0.1, ease }}
                 className="mt-3 max-w-md text-[14px] leading-relaxed text-ink-faint"
               >
-                Ask anything about your workspace, or jump back in below.
+                Ask anything about the yard, the orders or the pipeline. It reads
+                the same numbers the rest of the system does.
               </motion.p>
 
               <motion.div

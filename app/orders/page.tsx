@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { MagnifyingGlass, X, Info } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -49,10 +50,41 @@ const statusRank: Record<Order["status"], number> = {
 };
 
 export default function OrdersPage() {
-  const [search, setSearch] = useState("");
+  return (
+    <Suspense fallback={null}>
+      <OrdersRoute />
+    </Suspense>
+  );
+}
+
+/**
+ * `?order=MS-4419` opens that order's drawer, `?q=Chadwicks` prefills the
+ * filter. Both are how ⌘K, the Home rail and the assistant jump to a record.
+ * Keying on the params remounts the view when a new record is linked, so the
+ * deep link lands even when we are already sitting on this page.
+ */
+function OrdersRoute() {
+  const params = useSearchParams();
+  return (
+    <OrdersView
+      key={params.toString()}
+      initialOrder={params.get("order")}
+      initialQuery={params.get("q") ?? ""}
+    />
+  );
+}
+
+function OrdersView({
+  initialOrder,
+  initialQuery,
+}: {
+  initialOrder: string | null;
+  initialQuery: string;
+}) {
+  const [search, setSearch] = useState(initialQuery);
   const [stage, setStage] = useState<StageFilter>("All");
   const [source, setSource] = useState<SourceFilter>("All");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialOrder);
 
   const sorted = useMemo(() => {
     return [...orders].sort((a, b) => {

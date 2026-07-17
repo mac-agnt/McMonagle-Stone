@@ -30,7 +30,8 @@ export function StatCard({
 }: {
   icon: Icon;
   label: string;
-  value: string | number;
+  /** Node so hero figures can count up on load. */
+  value: React.ReactNode;
   hint?: string;
   valueTone?: ValueTone;
   delta?: { label: string; positive: boolean };

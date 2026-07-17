@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { CaretRight } from "@phosphor-icons/react";
 import { Card } from "../ui/Card";
@@ -7,38 +8,48 @@ import { PushNotificationRow } from "../notifications/PushNotificationRow";
 import { notifications } from "@/lib/notifications";
 import { staggerContainer, fadeUp, ease } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+import { stagePct } from "@/lib/assistant";
+import {
+  openOrders,
+  getCustomer,
+  getProduct,
+  formatEuroShort,
+} from "@/lib/mockData";
 
+/** Daniel's day. Deliveries, production, a call back, a berth window. */
 const schedule = [
   {
     start: "09:30",
-    end: "10:00",
-    title: "Growth team standup",
-    subtitle: "Daily sync",
+    end: "10:30",
+    title: "Chadwicks delivery window",
+    subtitle: "Raj Green · Dublin depot",
     tone: "accent" as const,
     current: true,
   },
   {
     start: "11:00",
     end: "12:00",
-    title: "Client sync — Northwind",
-    subtitle: "Project review",
+    title: "Production review",
+    subtitle: "Croaghan Hill · granite kerb run",
     tone: "warning" as const,
     current: false,
   },
   {
     start: "14:00",
-    end: "15:00",
-    title: "Product review",
-    subtitle: "Roadmap & priorities",
+    end: "14:30",
+    title: "Call back",
+    subtitle: "Donegal County Council · Michael",
     tone: "success" as const,
     current: false,
   },
-];
-
-const projects = [
-  { name: "Northwind Redesign", progress: 68, tone: "accent" as const },
-  { name: "Dashboard Revamp", progress: 42, tone: "warning" as const },
-  { name: "Q3 Growth Campaign", progress: 75, tone: "success" as const },
+  {
+    start: "16:00",
+    end: "18:00",
+    title: "Container berths",
+    subtitle: "Dublin Port · two loads",
+    tone: "accent" as const,
+    current: false,
+  },
 ];
 
 const toneBar: Record<"accent" | "warning" | "success", string> = {
@@ -51,6 +62,30 @@ const toneDot: Record<"accent" | "warning" | "success", string> = {
   accent: "bg-accent",
   warning: "bg-warning",
   success: "bg-success",
+};
+
+/** The biggest jobs still moving, with how far through their stages they are. */
+const liveJobs = [...openOrders]
+  .sort((a, b) => b.value - a.value)
+  .slice(0, 4)
+  .map((o) => ({
+    id: o.id,
+    customer: getCustomer(o.customerId)?.name ?? o.id,
+    product: getProduct(o.productId)?.name ?? "Order",
+    value: formatEuroShort(o.value),
+    progress: stagePct(o),
+    tone:
+      o.status === "late"
+        ? ("danger" as const)
+        : o.status === "at-risk"
+          ? ("warning" as const)
+          : ("accent" as const),
+  }));
+
+const jobBar: Record<"accent" | "warning" | "danger", string> = {
+  accent: "bg-accent",
+  warning: "bg-warning",
+  danger: "bg-danger",
 };
 
 export function HomeRail() {
@@ -96,38 +131,53 @@ export function HomeRail() {
             ))}
           </div>
 
-          <button className="flex w-full items-center justify-between px-5 py-3 text-[12px] font-medium text-ink-faint hover:text-ink">
-            View full calendar
+          <Link
+            href="/arrivals"
+            className="flex w-full items-center justify-between px-5 py-3 text-[12px] font-medium text-ink-faint hover:text-ink"
+          >
+            View arrivals board
             <CaretRight size={11} weight="bold" />
-          </button>
+          </Link>
         </Card>
       </motion.div>
 
       <motion.div variants={fadeUp} transition={{ duration: 0.3, ease }}>
         <Card className="p-0">
           <div className="flex items-center justify-between px-5 pt-4 pb-2">
-            <h2 className="text-[14.5px] font-semibold text-ink">Projects</h2>
-            <button className="text-[12px] font-medium text-accent-strong hover:text-accent">
+            <h2 className="text-[14.5px] font-semibold text-ink">Live jobs</h2>
+            <Link
+              href="/orders"
+              className="text-[12px] font-medium text-accent-strong hover:text-accent"
+            >
               View all
-            </button>
+            </Link>
           </div>
 
           <div className="flex flex-col gap-3.5 px-5 pb-4">
-            {projects.map((p) => (
-              <div key={p.name} className="flex items-center gap-3">
-                <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">
-                  {p.name}
-                </p>
+            {liveJobs.map((job) => (
+              <Link
+                key={job.id}
+                href={`/orders?order=${job.id}`}
+                className="group flex items-center gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium text-ink transition-colors group-hover:text-accent-strong">
+                    {job.customer}
+                  </p>
+                  <p className="truncate text-[11px] text-ink-faint">
+                    {job.product} · {job.value}
+                  </p>
+                </div>
                 <div className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-border-soft">
                   <div
-                    className={cn("h-full rounded-full", toneBar[p.tone])}
-                    style={{ width: `${p.progress}%` }}
+                    className={cn("h-full rounded-full", jobBar[job.tone])}
+                    style={{ width: `${job.progress}%` }}
                   />
                 </div>
-                <span className="w-8 shrink-0 text-right text-[11.5px] text-ink-faint">
-                  {p.progress}%
+                <span className="w-8 shrink-0 text-right text-[11.5px] tabular-nums text-ink-faint">
+                  {job.progress}%
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         </Card>

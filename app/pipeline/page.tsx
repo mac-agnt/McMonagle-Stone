@@ -6,6 +6,7 @@ import { Coins, ArrowsClockwise, Snowflake } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
+import { CountUp } from "@/components/ui/CountUp";
 import { BarList } from "@/components/ui/BarList";
 import { staggerContainer, fadeUp, ease } from "@/lib/motion";
 import {
@@ -150,7 +151,7 @@ export default function PipelinePage() {
           <StatCard
             icon={Coins}
             label="Total open quote value"
-            value={formatEuroShort(stats.openValue)}
+            value={<CountUp value={stats.openValue} format={formatEuroShort} />}
             valueTone="accent"
             hint="Open and cold quotes still live"
           />
@@ -159,7 +160,12 @@ export default function PipelinePage() {
           <StatCard
             icon={ArrowsClockwise}
             label="Follow-up rate"
-            value={`${stats.followUpRate}%`}
+            value={
+              <CountUp
+                value={stats.followUpRate}
+                format={(n) => `${Math.round(n)}%`}
+              />
+            }
             hint="Quotes chased at least once"
           />
         </motion.div>
@@ -167,7 +173,7 @@ export default function PipelinePage() {
           <StatCard
             icon={Snowflake}
             label="Quotes gone cold"
-            value={stats.goneCold}
+            value={<CountUp value={stats.goneCold} />}
             valueTone="danger"
             hint="Seven days or more, never chased"
           />
