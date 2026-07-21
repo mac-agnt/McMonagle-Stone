@@ -4,15 +4,18 @@
  */
 
 import type { Icon } from "@phosphor-icons/react";
-import { Package, FunnelSimple, Buildings } from "@phosphor-icons/react/dist/ssr";
+import { Package, FunnelSimple, Buildings, Archive, Factory } from "@phosphor-icons/react/dist/ssr";
 import { allNav } from "@/lib/nav";
 import {
   orders,
   quotes,
   customers,
+  stockRows,
+  productionRows,
   getCustomer,
   getProduct,
   formatEuro,
+  formatTonnes,
   formatDate,
 } from "@/lib/mockData";
 
@@ -23,7 +26,7 @@ export type SearchResult = {
   detail: string;
   /** Right-hand column: value, ETA, status. */
   meta?: string;
-  group: "Pages" | "Orders" | "Quotes" | "Customers";
+  group: "Pages" | "Orders" | "Quotes" | "Customers" | "Stock" | "Production";
   icon: Icon;
   href: string;
   /** Everything matchable, lowercased. */
@@ -84,11 +87,35 @@ const customerResults: SearchResult[] = customers.map((c) => {
   };
 });
 
+const stockResults: SearchResult[] = stockRows.map((s) => ({
+  id: `stock-${s.productId}`,
+  label: s.product.name,
+  detail: `Stock · ${s.belowReorder ? "Below reorder point" : "Healthy"}`,
+  meta: formatTonnes(s.onHand),
+  group: "Stock",
+  icon: Archive,
+  href: "/stock",
+  haystack: `${s.product.name} stock inventory reorder`.toLowerCase(),
+}));
+
+const productionResults: SearchResult[] = productionRows.map((p) => ({
+  id: `production-${p.id}`,
+  label: `${p.id} · ${p.product.name}`,
+  detail: `${p.quarry.name} · ${p.qualityFlag}`,
+  meta: `${p.yieldPct}% yield`,
+  group: "Production",
+  icon: Factory,
+  href: "/production",
+  haystack: `${p.id} ${p.product.name} ${p.quarry.name} production yield ${p.qualityFlag}`.toLowerCase(),
+}));
+
 const index: SearchResult[] = [
   ...navResults,
   ...orderResults,
   ...quoteResults,
   ...customerResults,
+  ...stockResults,
+  ...productionResults,
 ];
 
 export const GROUP_ORDER: SearchResult["group"][] = [
@@ -96,6 +123,8 @@ export const GROUP_ORDER: SearchResult["group"][] = [
   "Orders",
   "Quotes",
   "Customers",
+  "Stock",
+  "Production",
 ];
 
 /** Empty query shows the pages, same as before. Otherwise search everything. */

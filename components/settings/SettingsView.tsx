@@ -7,6 +7,7 @@ import {
   PaintBrush,
   BellSimple,
   ShieldCheck,
+  PlugsConnected,
 } from "@phosphor-icons/react";
 import { Card } from "../ui/Card";
 import { springSoft, fadeUp, ease } from "@/lib/motion";
@@ -15,12 +16,14 @@ import { ProfileTab } from "./ProfileTab";
 import { AppearanceTab } from "./AppearanceTab";
 import { NotificationsTab } from "./NotificationsTab";
 import { SecurityTab } from "./SecurityTab";
+import { IntegrationsTab } from "./IntegrationsTab";
 
 const tabs = [
   { id: "profile", label: "Profile", icon: UserCircle },
   { id: "appearance", label: "Appearance", icon: PaintBrush },
   { id: "notifications", label: "Notifications", icon: BellSimple },
   { id: "security", label: "Security", icon: ShieldCheck },
+  { id: "integrations", label: "Integrations", icon: PlugsConnected },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -76,6 +79,7 @@ export function SettingsView() {
           {active === "appearance" && <AppearanceTab />}
           {active === "notifications" && <NotificationsTab />}
           {active === "security" && <SecurityTab />}
+          {active === "integrations" && <IntegrationsTab />}
         </Card>
       </div>
     </motion.div>

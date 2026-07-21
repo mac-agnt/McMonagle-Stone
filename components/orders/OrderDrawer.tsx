@@ -15,6 +15,7 @@ import {
 import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
 import { StatusDot } from "@/components/ui/StatusDot";
+import { LandedCostStrip } from "@/components/orders/LandedCostStrip";
 import { cn } from "@/lib/cn";
 import {
   getCustomer,
@@ -215,6 +216,9 @@ function OrderDetail({ order }: { order: Order }) {
           {product?.name ?? "Product"}, {order.stage.toLowerCase()}.
         </p>
       </div>
+
+      {/* Landed cost breakdown */}
+      <LandedCostStrip order={order} />
 
       {/* Customer tracking preview */}
       <CustomerPreview order={order} url={url} />

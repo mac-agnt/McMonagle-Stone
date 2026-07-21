@@ -11,7 +11,7 @@ import {
   Warning,
   Truck,
   MapPin,
-  TrendDown,
+  Package,
 } from "@phosphor-icons/react";
 import { ease, fadeUp, staggerContainer } from "@/lib/motion";
 import { cn } from "@/lib/cn";
@@ -31,7 +31,7 @@ const suggestions = [
   { icon: Warning, label: suggestedQuestions[0] },
   { icon: Truck, label: suggestedQuestions[1] },
   { icon: MapPin, label: suggestedQuestions[2] },
-  { icon: TrendDown, label: suggestedQuestions[3] },
+  { icon: Package, label: suggestedQuestions[3] },
 ];
 
 export function ChatHome() {

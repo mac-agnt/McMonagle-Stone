@@ -19,6 +19,8 @@ import {
   dispatchToday,
   tonnageByQuarry,
   repPerformance,
+  stockBelowReorder,
+  riskFactors,
   getCustomer,
   getProduct,
   getQuarry,
@@ -60,6 +62,8 @@ export type AssistantAnswer = {
   text: string;
   card?: AnswerCard;
   link?: { label: string; href: string };
+  /** Datasets this answer drew from, shown as a small chip row. */
+  sources?: string[];
 };
 
 /* ------------------------------------------------------------------ */
@@ -164,6 +168,7 @@ const intents: Intent[] = [
         ],
       },
       link: { label: "View in Dashboard", href: "/dashboard" },
+      sources: ["Orders", "Pipeline"],
     }),
   },
 
@@ -225,6 +230,7 @@ const intents: Intent[] = [
             : undefined,
       },
       link: { label: "View in Pipeline", href: "/pipeline" },
+      sources: ["Pipeline"],
     }),
   },
 
@@ -285,6 +291,7 @@ const intents: Intent[] = [
           })),
       },
       link: { label: "View in Dashboard", href: "/dashboard" },
+      sources: ["Dashboard"],
     }),
   },
 
@@ -331,6 +338,67 @@ const intents: Intent[] = [
       link: { label: "View in Team", href: "/team" },
     }),
   },
+
+  {
+    id: "stock",
+    question: "Are we about to run out of anything?",
+    keywords: ["stock", "run out", "running out", "reorder", "inventory", "short", "restock", "low"],
+    build: () => {
+      if (stockBelowReorder.length === 0) {
+        return {
+          intent: "stock",
+          text: `Stock is healthy. Nothing is below its reorder point at any depot right now.`,
+          link: { label: "View in Stock", href: "/stock" },
+          sources: ["Stock"],
+        };
+      }
+      const worst = stockBelowReorder[0];
+      return {
+        intent: "stock",
+        text: `${stockBelowReorder.length} product${stockBelowReorder.length === 1 ? "" : "s"} ${stockBelowReorder.length === 1 ? "is" : "are"} below reorder point. ${worst.product.name} is the tightest, ${formatTonnes(worst.onHand)} on hand against a ${formatTonnes(worst.reorderPoint)} reorder line.`,
+        card: {
+          kind: "list",
+          rows: stockBelowReorder.map((r) => ({
+            label: r.product.name,
+            meta: `${formatTonnes(r.onHand)} on hand, reorder at ${formatTonnes(r.reorderPoint)}`,
+            value: r.runOutWeeks === Infinity ? undefined : `${r.runOutWeeks}w left`,
+            tone: "danger" as const,
+          })),
+        },
+        link: { label: "View in Stock", href: "/stock" },
+        sources: ["Stock"],
+      };
+    },
+  },
+
+  {
+    id: "tariff-exposure",
+    question: "What's exposed to tariffs right now?",
+    keywords: ["tariff", "tariffs", "exposed", "exposure", "risk factor", "geopolitical"],
+    build: () => {
+      const tariffRisk = riskFactors.find((f) => f.category === "Tariffs")!;
+      const affectedNames = tariffRisk.affectedProductIds
+        .map((id) => getProduct(id)?.name)
+        .filter(Boolean) as string[];
+      return {
+        intent: "tariff-exposure",
+        text: `${tariffRisk.name}, severity ${tariffRisk.severity} of 100. ${tariffRisk.note} ${affectedNames.length} product${affectedNames.length === 1 ? "" : "s"} sit in the exposure: ${affectedNames.join(", ")}.`,
+        card: {
+          kind: "list",
+          rows: tariffRisk.affectedProductIds.map((id) => {
+            const p = getProduct(id);
+            return {
+              label: p?.name ?? id,
+              meta: `Import stone, exposed to ${tariffRisk.category.toLowerCase()}`,
+              tone: "warning" as const,
+            };
+          }),
+        },
+        link: { label: "View in Delays", href: "/delays" },
+        sources: ["Risk factors", "Orders"],
+      };
+    },
+  },
 ];
 
 /** The four chips on the Home hero — the strongest four. */
@@ -338,7 +406,7 @@ export const suggestedQuestions = [
   "What's my biggest risk right now?",
   "Which orders are going to slip this week?",
   "Where's the Chadwicks order?",
-  "What's poor follow-up costing us?",
+  "Are we about to run out of anything?",
 ] as const;
 
 /* ------------------------------------------------------------------ */

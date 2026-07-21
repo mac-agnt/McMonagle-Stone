@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { DelayList } from "@/components/delays/DelayList";
 import { PredictedSlip } from "@/components/delays/PredictedSlip";
+import { RiskFactorsPanel } from "@/components/delays/RiskFactorsPanel";
 import { staggerContainer, fadeUp, ease } from "@/lib/motion";
 import { ordersAtRisk, ordersLate, avgDaysSlipped } from "@/lib/mockData";
 
@@ -53,7 +54,10 @@ export default function DelaysPage() {
 
       <DelayList />
 
-      <PredictedSlip />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <PredictedSlip />
+        <RiskFactorsPanel />
+      </div>
     </div>
   );
 }

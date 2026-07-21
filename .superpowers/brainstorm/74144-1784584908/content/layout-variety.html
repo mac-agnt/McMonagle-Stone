@@ -1,0 +1,103 @@
+<h2>Six new pages, six different shapes</h2>
+<p class="subtitle">Same design system throughout (existing colors, type, cards, charts) — but each page's dominant layout pattern differs so the demo doesn't feel like the same template repeated six times. Click any that feel wrong.</p>
+
+<div class="cards" data-multiselect>
+  <div class="card" data-choice="stock" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-nav" style="font-size:11px">Stock &amp; Inventory</div>
+      <div style="display:flex;gap:6px;padding:8px">
+        <div class="placeholder" style="flex:1;height:40px"></div>
+        <div class="placeholder" style="flex:1;height:40px"></div>
+        <div class="placeholder" style="flex:1;height:40px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:0 8px 8px">
+        <div class="placeholder" style="height:50px"></div>
+        <div class="placeholder" style="height:50px"></div>
+        <div class="placeholder" style="height:50px"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Stock / Inventory</h3>
+      <p>Card grid per product (like a warehouse shelf view) + stat row. Reorder-point bars, not another data table.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="production" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-nav" style="font-size:11px">Production Yield</div>
+      <div style="padding:8px">
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="placeholder" style="flex:2;height:30px"></div>
+          <div class="placeholder" style="flex:1;height:30px;opacity:.5"></div>
+        </div>
+        <div class="placeholder" style="height:60px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Production Yield</h3>
+      <p>Funnel visual per load: tonnage-in &rarr; tonnage-out &rarr; yield %. Feels like a process, not a spreadsheet.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="quoting" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mock-nav" style="font-size:11px">Quoting Engine</div>
+      <div style="display:flex;gap:6px;padding:8px">
+        <div class="placeholder" style="flex:1;height:90px"></div>
+        <div class="placeholder" style="flex:1;height:90px;opacity:.6"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Quoting Engine</h3>
+      <p>Split-panel calculator: inputs on left, live-updating price breakdown on right. The one genuinely interactive tool-feeling page.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="teamdetail" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;gap:8px;padding:8px">
+        <div class="placeholder" style="width:36px;height:36px;border-radius:50%"></div>
+        <div style="flex:1">
+          <div class="placeholder" style="height:10px;width:60%"></div>
+          <div class="placeholder" style="height:8px;width:40%;margin-top:4px"></div>
+        </div>
+      </div>
+      <div class="placeholder" style="height:40px;margin:0 8px 8px"></div>
+    </div>
+    <div class="card-body">
+      <h3>Rep Detail (Team drill-in)</h3>
+      <p>Profile-hero header (photo/avatar, name, streak) over their personal pipeline + orders. Feels like a person's page, not a table row.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="dailyreport" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="padding:8px">
+        <div class="placeholder" style="height:14px;width:70%"></div>
+        <div class="placeholder" style="height:8px;width:90%;margin-top:8px"></div>
+        <div class="placeholder" style="height:8px;width:80%;margin-top:4px"></div>
+        <div class="placeholder" style="height:8px;width:85%;margin-top:4px"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Daily / Morning Report</h3>
+      <p>Document/briefing style — a printable-feeling stacked memo (like a real morning digest), not KPI cards. Big typographic hierarchy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="integrations" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;gap:6px;padding:8px">
+        <div class="placeholder" style="flex:1;height:30px"></div>
+        <div class="placeholder" style="flex:1;height:30px"></div>
+      </div>
+      <div class="placeholder" style="height:20px;margin:0 8px"></div>
+    </div>
+    <div class="card-body">
+      <h3>Integrations (Settings tab)</h3>
+      <p>Sage 200 / Sycon shown as connection cards with mock sync status + last-synced timestamp. Small, not a full page.</p>
+    </div>
+  </div>
+</div>
+
+<p class="label">Existing pages getting enhanced (no new routes): Home chat (Company Brain polish), Arrivals (animated vessel dots along routes), Delays (real-looking risk factor badges), Pipeline (automation activity log), Orders (landed-cost breakdown in the drawer)</p>

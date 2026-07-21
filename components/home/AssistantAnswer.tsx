@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Copy, Check } from "@phosphor-icons/react";
 import { StageProgress } from "@/components/ui/StageProgress";
+import { SourceChips } from "@/components/home/SourceChips";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { getOrder, stagesForSource, stageIndex } from "@/lib/mockData";
@@ -38,6 +39,8 @@ export function AssistantAnswer({ answer }: { answer: Answer }) {
       ))}
 
       {answer.card && <AnswerCardView card={answer.card} />}
+
+      {answer.sources && <SourceChips sources={answer.sources} />}
 
       {answer.link && (
         <Link

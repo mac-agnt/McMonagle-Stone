@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { HeroRow } from "@/components/dashboard/HeroRow";
+import { AttentionStrip } from "@/components/dashboard/AttentionStrip";
 import { VolumeCharts } from "@/components/dashboard/VolumeCharts";
 import { WeekAndDepot } from "@/components/dashboard/WeekAndDepot";
 
@@ -14,6 +15,7 @@ export default function DashboardPage() {
         live
       />
       <HeroRow />
+      <AttentionStrip />
       <VolumeCharts />
       <WeekAndDepot />
     </div>

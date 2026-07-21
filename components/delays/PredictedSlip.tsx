@@ -3,13 +3,14 @@
 import { motion } from "framer-motion";
 import { Path } from "@phosphor-icons/react";
 import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
+import { RiskScore } from "./RiskScore";
 import { staggerContainer, fadeUp, ease } from "@/lib/motion";
 import {
   ordersPredictedSlip,
   getCustomer,
   getProduct,
   formatDate,
+  riskScoreFor,
 } from "@/lib/mockData";
 import { predictedWhy } from "./helpers";
 
@@ -42,6 +43,7 @@ export function PredictedSlip() {
         {ordersPredictedSlip.map((order) => {
           const customer = getCustomer(order.customerId);
           const product = getProduct(order.productId);
+          const risk = riskScoreFor(order);
           return (
             <motion.div
               key={order.id}
@@ -58,14 +60,18 @@ export function PredictedSlip() {
                     {product?.name ?? "Order"} · {order.id}
                   </p>
                 </div>
-                <Badge tone="warning" className="shrink-0">
-                  Forecast
-                </Badge>
+                <RiskScore score={risk.score} className="shrink-0" />
               </div>
 
               <p className="mt-2 text-[13px] leading-relaxed text-ink-muted">
                 {predictedWhy(order)}
               </p>
+
+              {risk.score > 0 && risk.factors.length > 0 && (
+                <p className="mt-1 text-[11.5px] text-ink-faint">
+                  Contributing: {risk.factors.map((f) => f.name).join(", ")}
+                </p>
+              )}
 
               <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-ink-faint">
                 <span className="tabular-nums">

@@ -8,10 +8,12 @@ import { Card } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
 import { CountUp } from "@/components/ui/CountUp";
 import { BarList } from "@/components/ui/BarList";
+import { ActivityLog } from "@/components/ui/ActivityLog";
 import { staggerContainer, fadeUp, ease } from "@/lib/motion";
 import {
   quotes as seedQuotes,
   reps,
+  automationEvents,
   formatEuroShort,
   type Quote,
   type LossReason,
@@ -264,6 +266,27 @@ export default function PipelinePage() {
           <RepDiscipline rows={repRows} />
         </Card>
       </div>
+
+      <Card className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-[14.5px] font-semibold text-ink">
+            Automation activity
+          </h2>
+          <p className="mt-0.5 text-[12px] text-ink-faint">
+            Follow-ups the system queued on its own, so nothing sits forgotten.
+          </p>
+        </div>
+        <ActivityLog
+          items={automationEvents.map((event) => ({
+            id: event.id,
+            title: `${event.customerName} · ${event.trigger}`,
+            meta: event.action,
+            tone: event.action.toLowerCase().includes("escalation")
+              ? "danger"
+              : "warning",
+          }))}
+        />
+      </Card>
     </div>
   );
 }

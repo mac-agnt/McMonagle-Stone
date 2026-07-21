@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowsClockwise, Trophy, Stack, Target } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -118,7 +119,9 @@ export default function TeamPage() {
         className="grid grid-cols-1 gap-4 md:grid-cols-2"
       >
         {repRows.map((rep) => (
-          <RepCard key={rep.repId} rep={rep} />
+          <Link key={rep.repId} href={`/team/${rep.repId}`}>
+            <RepCard rep={rep} />
+          </Link>
         ))}
       </motion.div>
 

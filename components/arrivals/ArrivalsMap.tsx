@@ -13,9 +13,13 @@ import { useTheme } from "@/components/ThemeProvider";
 import {
   orders,
   getProduct,
+  getDepot,
+  getCustomer,
   formatTonnes,
+  formatDate,
   type OrderStage,
 } from "@/lib/mockData";
+import { isVesselStage, getVesselPosition, type LngLat } from "./vessel";
 
 /** Import ports (the two arrival gateways) with real coordinates. */
 const PORTS: { name: string; lng: number; lat: number }[] = [
@@ -53,6 +57,38 @@ export function ArrivalsMap() {
       stats[port].tonnes += o.tonnage;
     }
     return stats;
+  }, []);
+
+  const vessels = useMemo(() => {
+    // Note: local var names avoid shadowing the `Map` component imported above.
+    const list: {
+      id: string;
+      pos: LngLat;
+      customerName: string;
+      eta: string;
+    }[] = [];
+
+    for (const o of orders) {
+      if (o.source !== "import" || !isVesselStage(o.stage)) continue;
+
+      const portName = getProduct(o.productId)?.port;
+      const depotName = getDepot(o.depotId)?.name;
+      const port = PORTS.find((p) => p.name === portName);
+      const depot = DEPOTS.find((d) => d.name === depotName);
+      if (!port || !depot) continue;
+
+      const pos = getVesselPosition(o, port, depot);
+      if (!pos) continue;
+
+      list.push({
+        id: o.id,
+        pos,
+        customerName: getCustomer(o.customerId)?.name ?? "Unknown customer",
+        eta: formatDate(o.eta),
+      });
+    }
+
+    return list;
   }, []);
 
   return (
@@ -115,6 +151,20 @@ export function ArrivalsMap() {
               </MapMarker>
             );
           })}
+
+          {vessels.map((v) => (
+            <MapMarker key={`vessel-${v.id}`} longitude={v.pos.lng} latitude={v.pos.lat}>
+              <MarkerContent>
+                <span className="relative flex items-center justify-center">
+                  <span className="absolute inline-flex size-4 rounded-full bg-warning/30 animate-pulse-dot" />
+                  <span className="relative inline-flex size-2 rounded-full bg-warning shadow-[0_1px_4px_rgba(0,0,0,0.5)] ring-2 ring-ink/70" />
+                </span>
+              </MarkerContent>
+              <MarkerTooltip>
+                <TooltipCard title={v.id} sub={`${v.customerName} · ETA ${v.eta}`} />
+              </MarkerTooltip>
+            </MapMarker>
+          ))}
         </Map>
 
         {/* Legend */}
@@ -126,6 +176,10 @@ export function ArrivalsMap() {
           <span className="flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-ink-faint" />
             Depot
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-warning" />
+            Inbound
           </span>
         </div>
       </div>

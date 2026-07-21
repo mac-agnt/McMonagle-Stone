@@ -1163,3 +1163,335 @@ export const reportArchiveTotals = {
   tonnes: reportArchive.reduce((s, r) => s + r.tonnes, 0),
   revenue: reportArchive.reduce((s, r) => s + r.revenue, 0),
 };
+
+/* ------------------------------------------------------------------ */
+/*  Stock & inventory                                                  */
+/*  Own-quarry stock has historically been the blind spot (imports get */
+/*  a shipping trail; own stone never had visibility until now).       */
+/* ------------------------------------------------------------------ */
+
+export type StockLevel = {
+  productId: string;
+  depotId: string;
+  onHand: number; // tonnes
+  capacity: number; // tonnes
+  reorderPoint: number; // tonnes
+  lastRestock: string; // ISO date
+};
+
+export const stockLevels: StockLevel[] = [
+  { productId: "p-quartzite", depotId: "d-donegal", onHand: 420, capacity: 900, reorderPoint: 300, lastRestock: "2026-07-10" },
+  { productId: "p-kilkenny", depotId: "d-donegal", onHand: 180, capacity: 600, reorderPoint: 220, lastRestock: "2026-06-29" },
+  { productId: "p-liscannor", depotId: "d-donegal", onHand: 96, capacity: 500, reorderPoint: 150, lastRestock: "2026-06-24" },
+  { productId: "p-granite-kerb", depotId: "d-donegal", onHand: 340, capacity: 700, reorderPoint: 250, lastRestock: "2026-07-08" },
+  { productId: "p-setts", depotId: "d-donegal", onHand: 210, capacity: 550, reorderPoint: 180, lastRestock: "2026-07-05" },
+  { productId: "p-indian", depotId: "d-dublin", onHand: 88, capacity: 400, reorderPoint: 150, lastRestock: "2026-06-20" },
+  { productId: "p-g654", depotId: "d-cork", onHand: 260, capacity: 500, reorderPoint: 200, lastRestock: "2026-07-01" },
+  { productId: "p-cobble", depotId: "d-dublin", onHand: 150, capacity: 350, reorderPoint: 120, lastRestock: "2026-07-03" },
+];
+
+export type StockRow = StockLevel & {
+  product: Product;
+  pct: number; // onHand / capacity, 0-100
+  belowReorder: boolean;
+  weeklyConsumption: number;
+  runOutWeeks: number;
+};
+
+/** Weekly draw-down estimated from this month's volume (tonnes/mo ÷ 4.33). */
+function weeklyConsumptionFor(productId: string): number {
+  const row = volumeByProduct.find((v) => v.productId === productId);
+  return row ? row.tonnes / 4.33 : 0;
+}
+
+export const stockRows: StockRow[] = stockLevels.map((s) => {
+  const product = getProduct(s.productId)!;
+  const weeklyConsumption = weeklyConsumptionFor(s.productId);
+  return {
+    ...s,
+    product,
+    pct: Math.round((s.onHand / s.capacity) * 100),
+    belowReorder: s.onHand < s.reorderPoint,
+    weeklyConsumption,
+    runOutWeeks: weeklyConsumption > 0 ? Math.round((s.onHand / weeklyConsumption) * 10) / 10 : Infinity,
+  };
+});
+
+export const stockOwnRows = stockRows.filter((r) => r.product.origin === "own");
+export const stockImportRows = stockRows.filter((r) => r.product.origin === "import");
+export const stockBelowReorder = stockRows.filter((r) => r.belowReorder);
+export const stockTotalTonnesOnHand = stockRows.reduce((s, r) => s + r.onHand, 0);
+
+/* ------------------------------------------------------------------ */
+/*  Production yield                                                   */
+/*  Tonnage in (raw block) vs tonnage out (finished, saleable stone).  */
+/* ------------------------------------------------------------------ */
+
+export type QualityFlag = "good" | "fair" | "poor";
+
+export type ProductionLoad = {
+  id: string;
+  quarryId: string;
+  productId: string;
+  date: string; // ISO
+  tonnesIn: number;
+  tonnesOut: number;
+  qualityFlag: QualityFlag;
+  note?: string;
+};
+
+export const productionLoads: ProductionLoad[] = [
+  { id: "PL-101", quarryId: "q-mountcharles", productId: "p-quartzite", date: "2026-07-05", tonnesIn: 40, tonnesOut: 34, qualityFlag: "good", note: "Clean run, standard block size." },
+  { id: "PL-102", quarryId: "q-barnesmore", productId: "p-kilkenny", date: "2026-07-06", tonnesIn: 32, tonnesOut: 21, qualityFlag: "poor", note: "Digger loaded gravel in with the block, high reject rate." },
+  { id: "PL-103", quarryId: "q-glenties", productId: "p-liscannor", date: "2026-07-07", tonnesIn: 26, tonnesOut: 19, qualityFlag: "fair", note: "Some colour variation through the seam." },
+  { id: "PL-104", quarryId: "q-croaghan", productId: "p-granite-kerb", date: "2026-07-08", tonnesIn: 38, tonnesOut: 33, qualityFlag: "good" },
+  { id: "PL-105", quarryId: "q-bundoran", productId: "p-setts", date: "2026-07-09", tonnesIn: 24, tonnesOut: 20, qualityFlag: "good" },
+  { id: "PL-106", quarryId: "q-mountcharles", productId: "p-quartzite", date: "2026-07-10", tonnesIn: 36, tonnesOut: 30, qualityFlag: "good" },
+  { id: "PL-107", quarryId: "q-barnesmore", productId: "p-kilkenny", date: "2026-07-11", tonnesIn: 30, tonnesOut: 24, qualityFlag: "fair" },
+  { id: "PL-108", quarryId: "q-glenties", productId: "p-liscannor", date: "2026-07-12", tonnesIn: 28, tonnesOut: 11, qualityFlag: "poor", note: "Fault line ran through most of the block, heavy reject." },
+  { id: "PL-109", quarryId: "q-croaghan", productId: "p-granite-kerb", date: "2026-07-13", tonnesIn: 34, tonnesOut: 29, qualityFlag: "good" },
+  { id: "PL-110", quarryId: "q-bundoran", productId: "p-setts", date: "2026-07-14", tonnesIn: 22, tonnesOut: 18, qualityFlag: "fair" },
+  { id: "PL-111", quarryId: "q-mountcharles", productId: "p-quartzite", date: "2026-07-15", tonnesIn: 30, tonnesOut: 26, qualityFlag: "good" },
+];
+
+export type ProductionRow = ProductionLoad & {
+  quarry: Quarry;
+  product: Product;
+  yieldPct: number;
+};
+
+export const productionRows: ProductionRow[] = productionLoads.map((l) => ({
+  ...l,
+  quarry: getQuarry(l.quarryId)!,
+  product: getProduct(l.productId)!,
+  yieldPct: Math.round((l.tonnesOut / l.tonnesIn) * 100),
+}));
+
+export const yieldByDay: { date: string; yieldPct: number }[] = productionRows.map((r) => ({
+  date: r.date,
+  yieldPct: r.yieldPct,
+}));
+
+export const avgYieldPct = Math.round(
+  productionRows.reduce((s, r) => s + r.yieldPct, 0) / productionRows.length
+);
+
+export const worstLoad = [...productionRows].sort((a, b) => a.yieldPct - b.yieldPct)[0];
+export const bestLoad = [...productionRows].sort((a, b) => b.yieldPct - a.yieldPct)[0];
+
+/* ------------------------------------------------------------------ */
+/*  Risk factors                                                       */
+/*  Named external conditions driving delay/cost risk, replacing the   */
+/*  plain predictedSlip boolean with something a composite score can   */
+/*  be built from.                                                     */
+/* ------------------------------------------------------------------ */
+
+export type RiskCategory = "Tariffs" | "Freight" | "Seasonal demand" | "Weather";
+
+export type RiskFactor = {
+  id: string;
+  name: string;
+  category: RiskCategory;
+  severity: number; // 0-100
+  note: string;
+  affectedProductIds: string[];
+};
+
+export const riskFactors: RiskFactor[] = [
+  {
+    id: "rf-tariffs",
+    name: "US tariff realignment",
+    category: "Tariffs",
+    severity: 62,
+    note: "American warehouses emptied early in the year are now restocking in volume, much of it routed through the same European ports we import through.",
+    affectedProductIds: ["p-indian", "p-g654", "p-cobble"],
+  },
+  {
+    id: "rf-freight",
+    name: "Freight cost spike",
+    category: "Freight",
+    severity: 74,
+    note: "Shipping lines are using the wider Middle East disruption to hold rates high on any lane touching the region, ours included.",
+    affectedProductIds: ["p-indian", "p-g654", "p-cobble"],
+  },
+  {
+    id: "rf-season",
+    name: "Early Christmas stock pull-forward",
+    category: "Seasonal demand",
+    severity: 58,
+    note: "Wholesale buyers moved their Christmas stock bookings earlier than usual this year, congesting the lines we use from late May.",
+    affectedProductIds: ["p-indian", "p-cobble"],
+  },
+  {
+    id: "rf-weather",
+    name: "Wet-week quarry output",
+    category: "Weather",
+    severity: 35,
+    note: "A run of wet weather slows both extraction and yard haulage across the Donegal quarries.",
+    affectedProductIds: ["p-liscannor", "p-kilkenny", "p-setts"],
+  },
+];
+
+export type RiskAssessment = {
+  score: number; // 0-100
+  factors: RiskFactor[];
+};
+
+/** Composite risk score for an order: factor severity plus current slip state. */
+export function riskScoreFor(order: Order): RiskAssessment {
+  const factors = riskFactors.filter((f) => f.affectedProductIds.includes(order.productId));
+  if (factors.length === 0) return { score: 0, factors: [] };
+
+  const avgSeverity = factors.reduce((s, f) => s + f.severity, 0) / factors.length;
+  const stateBump = order.status === "late" ? 20 : order.status === "at-risk" ? 12 : order.predictedSlip ? 8 : 0;
+  const score = Math.min(100, Math.round(avgSeverity * 0.6 + stateBump));
+
+  return { score, factors };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Integrations (Sage 200 / Sycon)                                    */
+/* ------------------------------------------------------------------ */
+
+export type IntegrationStatus = "connected" | "syncing" | "error";
+
+export type Integration = {
+  id: string;
+  name: string;
+  category: "Accounting" | "Warehouse" | "CRM";
+  status: IntegrationStatus;
+  lastSynced: string;
+  recordsSynced: number;
+};
+
+export const integrations: Integration[] = [
+  { id: "int-sage200", name: "Sage 200", category: "Accounting", status: "connected", lastSynced: "Today 06:15", recordsSynced: 1842 },
+  { id: "int-sycon-wh", name: "Sycon Warehousing", category: "Warehouse", status: "connected", lastSynced: "Today 06:15", recordsSynced: 640 },
+  { id: "int-sycon-crm", name: "Sycon CRM", category: "CRM", status: "connected", lastSynced: "Yesterday 22:40", recordsSynced: 214 },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Automation log (Pipeline)                                          */
+/*  Follow-up reminders auto-triggered by quote stage, derived from the */
+/*  same quotes/needsFollowUp data Pipeline already shows.              */
+/* ------------------------------------------------------------------ */
+
+export type AutomationEvent = {
+  id: string;
+  quoteId: string;
+  customerName: string;
+  trigger: string;
+  action: string;
+  repName: string;
+};
+
+export const automationEvents: AutomationEvent[] = [...quotesNeedFollowUp, ...quotesCold]
+  .sort((a, b) => b.daysSinceContact - a.daysSinceContact)
+  .slice(0, 8)
+  .map((q) => {
+    const customer = getCustomer(q.customerId);
+    const rep = getRep(q.repId);
+    const cold = q.status === "cold";
+    return {
+      id: `auto-${q.id}`,
+      quoteId: q.id,
+      customerName: customer?.name ?? q.id,
+      trigger: cold
+        ? `Crossed ${q.daysSinceContact} days with no contact`
+        : `${q.daysSinceContact} days since last contact`,
+      action: cold
+        ? `Escalation flagged for ${rep?.name ?? "rep"}`
+        : `Reminder queued for ${rep?.name ?? "rep"}`,
+      repName: rep?.name ?? "Unassigned",
+    };
+  });
+
+/* ------------------------------------------------------------------ */
+/*  Invoices owed (accounts) — feeds the morning briefing               */
+/* ------------------------------------------------------------------ */
+
+export type InvoiceOwed = {
+  id: string;
+  customerId: string;
+  amount: number;
+  daysOverdue: number;
+};
+
+export const invoicesOwed: InvoiceOwed[] = [
+  { id: "INV-3301", customerId: "c-chadwicks", amount: 8200, daysOverdue: 12 },
+  { id: "INV-3288", customerId: "c-donegalcc", amount: 15400, daysOverdue: 5 },
+  { id: "INV-3312", customerId: "c-greenscape", amount: 3100, daysOverdue: 20 },
+  { id: "INV-3320", customerId: "c-murdock", amount: 640, daysOverdue: 3 },
+  { id: "INV-3295", customerId: "c-glanbia", amount: 2200, daysOverdue: 9 },
+];
+
+export const totalInvoicesOwed = invoicesOwed.reduce((s, i) => s + i.amount, 0);
+
+/* ------------------------------------------------------------------ */
+/*  Daily / morning briefing                                           */
+/*  Computed once from the selectors above — no new raw data.          */
+/* ------------------------------------------------------------------ */
+
+export const dailyBriefing = {
+  date: TODAY,
+  stockAlerts: stockBelowReorder,
+  atSea: {
+    count: orders.filter((o) => o.source === "import" && !isDelivered(o)).length,
+    tonnes: orders
+      .filter((o) => o.source === "import" && !isDelivered(o))
+      .reduce((s, o) => s + o.tonnage, 0),
+  },
+  invoicesOwedTotal: totalInvoicesOwed,
+  invoicesOwedCount: invoicesOwed.length,
+  topRisk: [...riskFactors].sort((a, b) => b.severity - a.severity)[0],
+  tonnesToday: dispatchToday.tonnes,
+  tonnesTarget: dispatchToday.target,
+  openOrderValue,
+  quotesAwaitingFollowUp: quotesNeedFollowUp.length,
+  avgYieldPct,
+};
+
+/* ------------------------------------------------------------------ */
+/*  Rep detail (Team drill-in)                                         */
+/* ------------------------------------------------------------------ */
+
+export function getRepDetail(repId: string) {
+  const rep = getRep(repId);
+  if (!rep) return undefined;
+
+  const myQuotes = quotes.filter((q) => q.repId === repId);
+  const myOrders = orders.filter((o) => o.repId === repId);
+  const openMine = myOrders.filter((o) => !isDelivered(o));
+  const wonValue = myQuotes
+    .filter((q) => q.status === "won")
+    .reduce((s, q) => s + q.value, 0);
+  const openValue = openMine.reduce((s, o) => s + o.value, 0);
+  const sent = myQuotes.length;
+  const followedUp = myQuotes.filter((q) => q.followedUp).length;
+  const followUpRate = sent ? Math.round((followedUp / sent) * 100) : 0;
+
+  // Deterministic 8-week follow-up trend, seeded off the rep id so it never
+  // changes between renders but differs per person.
+  const seed = repId.split("").reduce((s, c) => s + c.charCodeAt(0), 0);
+  const rand = (n: number) => {
+    const x = Math.sin(n * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  const trend = Array.from({ length: 8 }, (_, i) => {
+    const jitter = Math.round((rand(seed + i) - 0.5) * 24);
+    return Math.max(10, Math.min(100, followUpRate + jitter));
+  });
+
+  return {
+    rep,
+    quotes: myQuotes,
+    orders: myOrders,
+    openOrders: openMine,
+    wonValue,
+    openValue,
+    sent,
+    followedUp,
+    followUpRate,
+    trend,
+  };
+}
