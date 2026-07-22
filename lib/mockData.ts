@@ -1420,12 +1420,120 @@ export type InvoiceOwed = {
 export const invoicesOwed: InvoiceOwed[] = [
   { id: "INV-3301", customerId: "c-chadwicks", amount: 8200, daysOverdue: 12 },
   { id: "INV-3288", customerId: "c-donegalcc", amount: 15400, daysOverdue: 5 },
-  { id: "INV-3312", customerId: "c-greenscape", amount: 3100, daysOverdue: 20 },
+  { id: "INV-3312", customerId: "c-greenscape", amount: 3100, daysOverdue: 74 },
   { id: "INV-3320", customerId: "c-murdock", amount: 640, daysOverdue: 3 },
-  { id: "INV-3295", customerId: "c-glanbia", amount: 2200, daysOverdue: 9 },
+  { id: "INV-3295", customerId: "c-glanbia", amount: 2200, daysOverdue: 45 },
 ];
 
 export const totalInvoicesOwed = invoicesOwed.reduce((s, i) => s + i.amount, 0);
+
+/* ------------------------------------------------------------------ */
+/*  Accounting — Sage-style snapshot: cash, P&L, debtors, creditors, VAT */
+/*  Figures are month-to-date (through 15 Jul), consistent with the     */
+/*  tonnage/revenue pace already established in reportArchive.          */
+/* ------------------------------------------------------------------ */
+
+export type ExpenseCategory = {
+  name: string;
+  amount: number;
+};
+
+/** Direct cost of stone produced/imported this month — quarry labour, blasting, primary haulage, freight. */
+export const cogsMTD = 258_500;
+
+/** Everything else it costs to run the business, month to date. */
+export const expenseCategoriesMTD: ExpenseCategory[] = [
+  { name: "Wages (office & sales)", amount: 34_200 },
+  { name: "Vehicle & haulage fleet", amount: 22_400 },
+  { name: "Plant & equipment hire", amount: 11_600 },
+  { name: "Insurance", amount: 8_100 },
+  { name: "Admin & marketing", amount: 5_300 },
+  { name: "Professional fees", amount: 3_800 },
+];
+
+export const totalOperatingExpensesMTD = expenseCategoriesMTD.reduce(
+  (s, e) => s + e.amount,
+  0
+);
+
+export const revenueMTD = 431_600;
+export const revenueLastMonth = reportArchive[0].revenue;
+
+export const grossProfitMTD = revenueMTD - cogsMTD;
+export const grossMarginPctMTD = Math.round((grossProfitMTD / revenueMTD) * 100);
+export const netProfitMTD = grossProfitMTD - totalOperatingExpensesMTD;
+export const netMarginPctMTD = Math.round((netProfitMTD / revenueMTD) * 100);
+
+/** Irish standard VAT rate, applied to sales out and cost in. */
+const VAT_RATE = 0.23;
+export const vatOnSalesMTD = Math.round(revenueMTD * VAT_RATE);
+export const vatReclaimableMTD = Math.round(
+  (cogsMTD + totalOperatingExpensesMTD) * VAT_RATE
+);
+export const vatDueMTD = vatOnSalesMTD - vatReclaimableMTD;
+export const vatPeriodLabel = "Jul–Aug 2026";
+export const vatDueDate = "2026-09-19";
+
+export type AgingBucket = "current" | "1-30" | "31-60" | "61-90" | "90+";
+
+export const agingBucketOrder: AgingBucket[] = [
+  "current",
+  "1-30",
+  "31-60",
+  "61-90",
+  "90+",
+];
+
+export function agingBucket(daysOverdue: number): AgingBucket {
+  if (daysOverdue <= 0) return "current";
+  if (daysOverdue <= 30) return "1-30";
+  if (daysOverdue <= 60) return "31-60";
+  if (daysOverdue <= 90) return "61-90";
+  return "90+";
+}
+
+/** Money owed to us, grouped into the standard aging buckets. */
+export const debtorsAging: Record<AgingBucket, number> = (() => {
+  const buckets: Record<AgingBucket, number> = {
+    current: 0,
+    "1-30": 0,
+    "31-60": 0,
+    "61-90": 0,
+    "90+": 0,
+  };
+  for (const inv of invoicesOwed) {
+    buckets[agingBucket(inv.daysOverdue)] += inv.amount;
+  }
+  return buckets;
+})();
+
+export type SupplierBill = {
+  id: string;
+  supplier: string;
+  amount: number;
+  /** Negative = not yet due. */
+  daysOverdue: number;
+};
+
+/** Money we owe — quarry contractors and haulage/fuel suppliers. */
+export const supplierBills: SupplierBill[] = [
+  { id: "PO-2201", supplier: "Errigal Haulage Ltd", amount: 12_400, daysOverdue: 4 },
+  { id: "PO-2214", supplier: "Cassidy Plant Hire", amount: 6_800, daysOverdue: -6 },
+  { id: "PO-2198", supplier: "Dublin Port Handling", amount: 9_100, daysOverdue: 18 },
+  { id: "PO-2220", supplier: "Sweeney Fuels", amount: 5_300, daysOverdue: -2 },
+  { id: "PO-2205", supplier: "Ulster Explosives Co", amount: 3_900, daysOverdue: 11 },
+];
+
+export const totalCreditors = supplierBills.reduce((s, b) => s + b.amount, 0);
+export const overdueCreditors = supplierBills
+  .filter((b) => b.daysOverdue > 0)
+  .reduce((s, b) => s + b.amount, 0);
+
+export const bankBalance = 246_800;
+/** Last 8 weeks, Mon close of business. */
+export const bankBalanceTrend = [
+  198_200, 211_400, 205_900, 219_300, 228_100, 221_600, 238_400, 246_800,
+];
 
 /* ------------------------------------------------------------------ */
 /*  Daily / morning briefing                                           */

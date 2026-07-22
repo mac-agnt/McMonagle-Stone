@@ -18,7 +18,7 @@ export function ProfileTab() {
     >
       <div className="flex items-center gap-4">
         <div className="relative">
-          <Avatar initials="MA" size={64} />
+          <Avatar initials="DM" size={64} />
           <button
             aria-label="Change avatar"
             className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full border-2 border-surface bg-ink text-bg"
@@ -27,20 +27,20 @@ export function ProfileTab() {
           </button>
         </div>
         <div>
-          <p className="text-[14px] font-semibold text-ink">Mac O&apos;Brien</p>
-          <p className="text-[12.5px] text-ink-faint">macdobrien08@gmail.com</p>
+          <p className="text-[14px] font-semibold text-ink">Daniel McMonagle</p>
+          <p className="text-[12.5px] text-ink-faint">daniel@mcmonaglestone.ie</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Full name">
-          <TextInput defaultValue="Mac O'Brien" />
+          <TextInput defaultValue="Daniel McMonagle" />
         </Field>
         <Field label="Display name" helper="Shown to your team across the workspace">
-          <TextInput defaultValue="mac" />
+          <TextInput defaultValue="daniel" />
         </Field>
         <Field label="Email address">
-          <TextInput defaultValue="macdobrien08@gmail.com" type="email" />
+          <TextInput defaultValue="daniel@mcmonaglestone.ie" type="email" />
         </Field>
         <Field label="Role" helper="Set by your workspace admin">
           <TextInput defaultValue="Product Engineer" disabled />

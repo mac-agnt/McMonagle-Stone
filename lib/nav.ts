@@ -10,6 +10,7 @@ import {
   Boat,
   Calculator,
   FileText,
+  Bank,
   Users,
   Gear,
 } from "@phosphor-icons/react/dist/ssr";
@@ -32,6 +33,7 @@ export const primaryNav: NavItem[] = [
   { label: "Arrivals", href: "/arrivals", icon: Boat, slug: "arrivals" },
   { label: "Quoting", href: "/quoting", icon: Calculator, slug: "quoting" },
   { label: "Reports", href: "/reports", icon: FileText, slug: "reports" },
+  { label: "Accounting", href: "/accounting", icon: Bank, slug: "accounting" },
   { label: "Team", href: "/team", icon: Users, slug: "team" },
 ];
 
